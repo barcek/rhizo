@@ -90,7 +90,7 @@ export default Vue.extend({
             /* return true if filtering has begun or current entry is 'start' */
             const matchCount = Object.keys(this.matches).length;
             const nameCount = Object.keys(this.names).length;
-            return matchCount < nameCount || this.entry === baseEntries['start'];
+            return matchCount <= nameCount || this.entry === baseEntries['start'];
         }
     },
     watch: {
