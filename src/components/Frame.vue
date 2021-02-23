@@ -45,7 +45,7 @@ const baseEntries = {
 };
 
 /* regular expression to match <t></t> elements, containing terms */
-const termFormat = /(<\/?t\/?>)([\S|\w\d]*)(<\/?t\/?>)/g;
+const termFormat = /(<\/?t\/?>)([\s\w.]*)(<\/?t\/?>)/g;
 
 /*
     Vue object
