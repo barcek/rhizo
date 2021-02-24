@@ -30,7 +30,7 @@ export const entry: Filter = {
     typing: HTMLButtonElement,
     status: 'aria-pressed',
     source: 'textContent',
-    isOpen: true
+    isSeen: true
 };
 
 /*
@@ -46,7 +46,7 @@ export default Vue.extend({
         handleClick(event: Event): void {
             const target = event.target as HTMLButtonElement;
             if (target.nodeName === entry.anchor) {
-                this.$emit('toggle', target, entry);
+                this.$emit('open', target, entry);
                 this.$emit('query', 'entry');
             };
         }

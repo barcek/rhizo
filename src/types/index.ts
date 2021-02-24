@@ -9,6 +9,6 @@ export interface Filter {
     readonly typing: unknown;
     readonly status: string;
     readonly source: string;
-    isOpen: boolean;
+    isSeen: boolean;
 };
 

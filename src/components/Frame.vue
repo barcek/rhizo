@@ -2,20 +2,22 @@
     <main class="frame">
         <!-- filter (text input) -->
         <frame-input
-            @query="handleQuery"
-            @toggle="handleToggle"
+            @open="handleChannelOpen"
+            @query="handleIncomingQuery"
+            @clear="handleFilterClear"
+            @close="handleChannelClose"
         />
         <!-- entry & filter (button for terms present) -->
         <router-view
-            v-if="filters.entry.isOpen"
+            v-if="filters.entry.isSeen"
             :entry="entry"
-            @query="handleQuery"
-            @toggle="handleToggle"
+            @open="handleChannelOpen"
+            @query="handleIncomingQuery"
             class="border--thin"
         />
         <!-- list of matches -->
         <frame-index
-            v-if="indexIsOpen"
+            v-if="indexIsSeen"
             :matches="matches"
             class="border--thin"
          />
@@ -86,7 +88,7 @@ export default Vue.extend({
             /* return prop passed to FrameIndex */
             return this.getMatches(this.names, this.$data.queries);
         },
-        indexIsOpen: function(): boolean {
+        indexIsSeen: function(): boolean {
             /* return true if filtering has begun or current entry is 'start' */
             const matchCount = Object.keys(this.matches).length;
             const nameCount = Object.keys(this.names).length;
@@ -95,27 +97,21 @@ export default Vue.extend({
     },
     watch: {
         channel(): void {
-            /* show FrameEntry & clear queries, to recompute matches & hide -Index */
-            if (this.$data.channel === 'clear') {
-                this.$data.filters.entry.isOpen = true;
-                this.$data.queries = [''];
-                return;
-            };
-            /* show channel filter only, set its queries & clear it to watch again */
+            /* show & use channel filter & empty channel string to watch again */
             if (this.$data.channel) {
-                this.setIsFilterOpen((name: string, channel: string) =>
-                    name === channel ? true : false
-                );
-                this.setQueries(this.$data.filters[this.$data.channel]);
+                this.setFiltersSeen([this.$data.channel]);
+                const otherFilters = Object.keys(this.$data.filters)
+                    .filter(key => key != this.$data.channel);
+                this.resetToggledElements(otherFilters);
+                this.clearFilterValues(otherFilters);
+                this.extractQueries(this.$data.filters[this.$data.channel]);
                 this.$data.channel = '';
             };
         },
         $route(): void {
-            /* show filters, toggle filter statuses off & clear queries & channel */
-            this.setIsFilterOpen(() => true);
-            this.resetFilterElements();
-            this.$data.queries = [''];
-            this.$data.channel = '';
+            /* clear, toggle off & show all filters & empty queries & channel */
+            this.handleFilterClear(Object.keys(this.$data.filters));
+            this.handleChannelClose(this.$data.channel);
         }
     },
     created(): void {
@@ -138,42 +134,64 @@ export default Vue.extend({
         /*
             Event handlers
         */
-        handleQuery(value: string): void {
-            this.$data.channel = value;
+        handleChannelOpen(element: HTMLElement, filter: Filter): void {
+            this.toggleFilterElement(element, filter);
         },
-        handleToggle(element: HTMLElement, filter: Filter): void {
-            this.toggleFilterElements(element, filter);
+        handleIncomingQuery(name: string): void {
+            this.$data.channel = name;
+        },
+        /*
+            clear any value on filters named, show all filters & clear queries,
+            to recompute matches & hide FrameIndex
+        */
+        handleFilterClear(names: string[]): void {
+            this.clearFilterValues(names);
+            this.setFiltersSeen(Object.keys(this.$data.filters));
+            this.$data.queries = [''];
+        },
+        /* toggle off all channel else all filter elements & empty to watch again */
+        handleChannelClose(name: string): void {
+            name
+                ? this.resetToggledElements([name])
+                : this.resetToggledElements(Object.keys(this.$data.filters));
+            this.$data.channel = '';
         },
         /*
             Filter managers
         */
-        /* show or hide each filter as determined by function passed */
-        setIsFilterOpen(determine: (name: string, channel: string) => boolean): void {
-            const names = Object.keys(this.$data.filters);
-            names.forEach(name => {
-                this.$data.filters[name].isOpen = determine(name, this.$data.channel);
-            });
-        },
-        /* return an array of all elements with a filter status attribute */
-        getFilterElements(filter: Filter): Array<Element> {
-            const selector = `[${filter.status}="true"]`;
-            const selected: NodeListOf<Element> = document.querySelectorAll(selector);
-            return Array.prototype.slice.call(selected);
-        },
         /* toggle a filter status attribute to denote the status on or off */
-        toggleFilterElements(element: HTMLElement, filter: Filter): void {
+        toggleFilterElement(element: HTMLElement, filter: Filter): void {
             const status: string = filter.status;
             const isOn: boolean = (element.getAttribute(status) === 'true');
             element.setAttribute(status, String(!isOn));
         },
-        /* toggle each filter status off & clear any source value attribute */
-        resetFilterElements(): void {
-            const names = Object.keys(this.$data.filters);
+        /* return all elements for a filter with status attribute set to true, i.e. on */
+        getToggledElements(filter: Filter): Array<Element> {
+            const selector = `[${filter.status}="true"]`;
+            const selected: NodeListOf<Element> = document.querySelectorAll(selector);
+            return Array.prototype.slice.call(selected);
+        },
+        /* set every status attribute of each named filter to false, i.e. off */
+        resetToggledElements(names: string[]): void {
             names.forEach(name => {
                 const filter = this.$data.filters[name];
-                const els: Array<typeof filter.typing> = this.getFilterElements(filter);
-                filter.source === 'value' && els.forEach(el => el.value = '');
+                const els: Array<typeof filter.typing> = this.getToggledElements(filter);
                 els.forEach(el => el.setAttribute(filter.status, "false"));
+            });
+        },
+        /* set any source value attribute of each named filter to an empty string */
+        clearFilterValues(names: string[]): void {
+            names.forEach(name => {
+                const filter = this.$data.filters[name];
+                const els: Array<typeof filter.typing> = this.getToggledElements(filter);
+                filter.source === 'value' && els.forEach(el => el.value = '');
+            });
+        },
+        /* toggle visibility of each named filter */
+        setFiltersSeen(names: string[]): void {
+            const filters = Object.keys(this.$data.filters);
+            filters.forEach(filter => {
+                this.$data.filters[filter].isSeen = names.includes(filter) ? true : false;
             });
         },
         /*
@@ -202,8 +220,8 @@ export default Vue.extend({
             return Object.fromEntries(namesNst);
         },
         /* assign to $data.queries each source string on a filter status */
-        setQueries(filter: Filter): void {
-            const els: Array<any> = this.getFilterElements(filter);
+        extractQueries(filter: Filter): void {
+            const els: Array<any> = this.getToggledElements(filter);
             const queries: string[] = els.map(el => el[filter.source] || '');
             this.$data.queries = queries;
         }

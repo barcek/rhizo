@@ -1,14 +1,19 @@
 <template>
-    <section class="frame-input">
+    <section class="frame-input cont--flex">
         <label for="text" class="visually-hidden">
             explore
         </label>
         <input
             id="text" type="text" placeholder="Explore"
             data-toggled="false"
-            @focus="handleFocus"
-            @keyup="handleKeyup"
+            @focus="handleInputFocus"
+            @keyup="handleInputKeyup"
         />
+        <button @click="handleButtonClick">
+            <svg viewBox="0 0 10 10">
+                <path d="M1,1 L9,9 M1,9 L9,1"/>
+            </svg>
+        </button>
     </section>
 </template>
 
@@ -29,7 +34,7 @@ export const input: Filter = {
     typing: HTMLInputElement,
     status: 'data-toggled',
     source: 'value',
-    isOpen: true
+    isSeen: true
 };
 
 /*
@@ -42,12 +47,18 @@ export default Vue.extend({
         /*
             Event handlers
         */
-        handleFocus(event: Event): void {
-            this.$emit('toggle', event.target, input);
+        handleInputFocus(event: Event): void {
+            this.$emit('open', event.target, input);
         },
-        handleKeyup(event: Event): void {
+        handleInputKeyup(event: Event): void {
             const target = event.target as HTMLInputElement;
-            this.$emit('query', target.value ? 'input' : 'clear');
+            target.value
+                ? this.$emit('query', 'input')
+                : this.$emit('clear', ['input']);
+        },
+        handleButtonClick(): void {
+            this.$emit('clear', ['input']);
+            this.$emit('close', 'input');
         }
     }
 });
