@@ -1,6 +1,9 @@
 export interface Entry {
     readonly name: string;
-    readonly date: string;
+    readonly date?: string;
+    readonly edit?: string;
+    readonly team?: string[];
+    meta?: string;
     body: string;
 };
 

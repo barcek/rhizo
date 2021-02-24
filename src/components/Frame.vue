@@ -120,7 +120,7 @@ export default Vue.extend({
         const contentObj: Record<string, Entry> = {};
         let nameLower = '';
         contentArr.forEach(entry => {
-            if (entry.date === '00.00.00') {
+            if (entry.meta && entry.meta === 'start') {
                 baseEntries.start = entry;
                 return;
             };
