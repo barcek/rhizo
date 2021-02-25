@@ -76,7 +76,7 @@ export default Vue.extend({
             return this.getEntry(this.$data.entries, this.$route.params.name || 'start');
         },
         names: function(): Record<number, string> {
-            /* return names of all entries excl. 'start' & 'error' sorted & id keyed */
+            /* return names of all entries exc. 'start' & 'error', sorted & id keyed */
             const namesArr = Object.keys(this.$data.entries).slice(2).sort();
             const namesObj: Record<number, string> = {};
             namesArr.forEach((name, index) => {
@@ -89,25 +89,11 @@ export default Vue.extend({
             return this.getMatches(this.names, this.$data.queries);
         },
         indexIsSeen: function(): boolean {
-            /* return true if filtering has begun or current entry is 'start' */
-            const matchCount = Object.keys(this.matches).length;
-            const nameCount = Object.keys(this.names).length;
-            return matchCount <= nameCount || this.entry === baseEntries['start'];
+            /* return true if filtering is in progress */
+            return this.$data.queries[0];
         }
     },
     watch: {
-        channel(): void {
-            /* show & use channel filter & empty channel string to watch again */
-            if (this.$data.channel) {
-                this.setFiltersSeen([this.$data.channel]);
-                const otherFilters = Object.keys(this.$data.filters)
-                    .filter(key => key != this.$data.channel);
-                this.resetToggledElements(otherFilters);
-                this.clearFilterValues(otherFilters);
-                this.extractQueries(this.$data.filters[this.$data.channel]);
-                this.$data.channel = '';
-            };
-        },
         $route(): void {
             /* clear, toggle off & show all filters & empty queries & channel */
             this.handleFilterClear(Object.keys(this.$data.filters));
@@ -134,44 +120,51 @@ export default Vue.extend({
         /*
             Event handlers
         */
-        handleChannelOpen(element: HTMLElement, filter: Filter): void {
+        /* ensure filter toggled here is set as channel & revert all other filters */
+        handleChannelOpen(element: HTMLElement, filter: Filter, name: string): void {
             this.toggleFilterElement(element, filter);
+            if (this.$data.channel != name) {
+                const otherFilters = Object.keys(this.$data.filters)
+                    .filter(key => key != name);
+                this.resetToggledElements(otherFilters);
+                this.clearFilterValues(otherFilters);
+                this.$data.channel = name;
+            };
         },
+        /* show only the active filter & pull queries from its toggled element(s) */
         handleIncomingQuery(name: string): void {
-            this.$data.channel = name;
+            this.setFiltersSeen([name]);
+            this.extractQueries(this.$data.filters[this.$data.channel]);
         },
-        /*
-            clear any value on filters named, show all filters & clear queries,
-            to recompute matches & hide FrameIndex
-        */
+        /* empty values on named filters, show all filters & clear queries array */
         handleFilterClear(names: string[]): void {
             this.clearFilterValues(names);
             this.setFiltersSeen(Object.keys(this.$data.filters));
             this.$data.queries = [''];
         },
-        /* toggle off all channel else all filter elements & empty to watch again */
+        /* untoggle the element(s) on a named filter & unset the current channel */
         handleChannelClose(name: string): void {
-            name
-                ? this.resetToggledElements([name])
-                : this.resetToggledElements(Object.keys(this.$data.filters));
-            this.$data.channel = '';
+            if (name) {
+                this.resetToggledElements([name]);
+                this.$data.channel = '';
+            };
         },
         /*
             Filter managers
         */
-        /* toggle a filter status attribute to denote the status on or off */
+        /* toggle a filter status attribute to denote the status either on or off */
         toggleFilterElement(element: HTMLElement, filter: Filter): void {
             const status: string = filter.status;
             const isOn: boolean = (element.getAttribute(status) === 'true');
             element.setAttribute(status, String(!isOn));
         },
-        /* return all elements for a filter with status attribute set to true, i.e. on */
+        /* return the element(s) of a filter with status attribute true, i.e. on */
         getToggledElements(filter: Filter): Array<Element> {
             const selector = `[${filter.status}="true"]`;
             const selected: NodeListOf<Element> = document.querySelectorAll(selector);
             return Array.prototype.slice.call(selected);
         },
-        /* set every status attribute of each named filter to false, i.e. off */
+        /* ensure every status attribute on each named filter is false, i.e. off */
         resetToggledElements(names: string[]): void {
             names.forEach(name => {
                 const filter = this.$data.filters[name];
@@ -187,7 +180,7 @@ export default Vue.extend({
                 filter.source === 'value' && els.forEach(el => el.value = '');
             });
         },
-        /* toggle visibility of each named filter */
+        /* show each named filter */
         setFiltersSeen(names: string[]): void {
             const filters = Object.keys(this.$data.filters);
             filters.forEach(filter => {
@@ -197,29 +190,29 @@ export default Vue.extend({
         /*
             Prop providers
         */
-        /* return an entry by name or use 'error', formatting terms in the body */
+        /* return an entry by name or use 'error', formatting any terms in the body */
         getEntry(entries: Record<string, Entry>, name: string): Entry {
             const entry: Entry = entries?.[name] || this.$data.entries?.['error'];
             entry.body = entry.body.replaceAll(termFormat, this.formatTerms);
             return entry;
         },
-        /* if in 1+ entry names, return term in a filter element, else tag-free */
+        /* if term is in 1+ entry names, return in a filter element, else tag-free */
         formatTerms(element: string, opening: string, term: string): string {
             const matches = this.getMatches(this.names, [ term ]);
             const { anchor, status } = this.$data.filters.entry;
             return Object.keys(matches).length > 0 ?
                 `<${anchor} ${status}="false">${term}</${anchor}>` : term;
         },
-        /* return an object with all entry names containing every query string */
+        /* return an object holding each entry name which includes every query string */
         getMatches(names: Record<number, string>, queries = ['']): Record<number, string> {
-            let namesNst = Object.entries(names);
+            let namesNested = Object.entries(names);
             queries.forEach(query => {
-                namesNst = namesNst.filter(name =>
+                namesNested = namesNested.filter(name =>
                     name[1].toLowerCase().includes(query.toLowerCase()));
             });
-            return Object.fromEntries(namesNst);
+            return Object.fromEntries(namesNested);
         },
-        /* assign to $data.queries each source string on a filter status */
+        /* assign to queries each string on a toggled filter element source attribute */
         extractQueries(filter: Filter): void {
             const els: Array<any> = this.getToggledElements(filter);
             const queries: string[] = els.map(el => el[filter.source] || '');

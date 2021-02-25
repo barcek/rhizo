@@ -46,7 +46,7 @@ export default Vue.extend({
         handleClick(event: Event): void {
             const target = event.target as HTMLButtonElement;
             if (target.nodeName === entry.anchor) {
-                this.$emit('open', target, entry);
+                this.$emit('open', target, entry, 'entry');
                 this.$emit('query', 'entry');
             };
         }

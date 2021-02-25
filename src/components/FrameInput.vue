@@ -1,10 +1,10 @@
 <template>
     <section class="frame-input cont--flex">
-        <label for="text" class="visually-hidden">
+        <label for="frame-input-bar" class="visually-hidden">
             explore
         </label>
         <input
-            id="text" type="text" placeholder="Explore"
+            id="frame-input-bar" type="text" placeholder="Explore"
             data-toggled="false"
             @focus="handleInputFocus"
             @keyup="handleInputKeyup"
@@ -48,7 +48,7 @@ export default Vue.extend({
             Event handlers
         */
         handleInputFocus(event: Event): void {
-            this.$emit('open', event.target, input);
+            this.$emit('open', event.target, input, 'input');
         },
         handleInputKeyup(event: Event): void {
             const target = event.target as HTMLInputElement;
@@ -57,6 +57,11 @@ export default Vue.extend({
                 : this.$emit('clear', ['input']);
         },
         handleButtonClick(): void {
+            /* ensure handleChannelOpen is run for input, to revert all other filters*/
+            if (this.$parent.$data.channel != 'input') {
+                const inputElement = document.querySelector('#frame-input-bar');
+                this.$emit('open', inputElement, input, 'input');
+            };
             this.$emit('clear', ['input']);
             this.$emit('close', 'input');
         }
