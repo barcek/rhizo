@@ -84,6 +84,14 @@ export default Vue.extend({
             });
             return namesObj;
         },
+        areFormatted: function(): Record<string, boolean> {
+            /* return each entry name indexing a false value, for entries formatted */
+            const areFormatted: Record<string, boolean> = {};
+            Object.values(this.names).forEach(name => {
+                areFormatted[name] = false;
+            });
+            return areFormatted;
+        },
         matches: function(): Record<number, string> {
             /* return prop passed to FrameIndex */
             return this.getMatches(this.names, this.$data.queries);
@@ -190,11 +198,18 @@ export default Vue.extend({
         /*
             Prop providers
         */
-        /* return an entry by name or use 'error', formatting any terms in the body */
+        /* return an entry formatted & stored, or format & store first, else 'error' */
         getEntry(entries: Record<string, Entry>, name: string): Entry {
-            const entry: Entry = entries?.[name] || this.$data.entries?.['error'];
-            entry.body = entry.body.replaceAll(termFormat, this.formatTerms);
-            return entry;
+            if (!entries[name]) {
+                return this.$data.entries['error'];
+            };
+            if (entries[name] && this.areFormatted[name] === true) {
+                return entries[name];
+            };
+            entries[name].body = entries[name].body
+                .replaceAll(termFormat, this.formatTerms);
+            this.areFormatted[name] = true;
+            return entries[name];
         },
         /* if term is in 1+ entry names, return in a filter element, else tag-free */
         formatTerms(element: string, opening: string, term: string): string {
