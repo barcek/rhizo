@@ -46,10 +46,15 @@ export default Vue.extend({
         handleClick(event: Event): void {
             const target = event.target as HTMLButtonElement;
             if (target.nodeName === entry.anchor) {
-                this.$emit('open', target, entry, 'entry');
+                this.toggleButton(target);
+                this.$emit('open', entry, 'entry');
                 this.$emit('query', 'entry');
             };
-        }
+        },
+        toggleButton(element: HTMLElement): void {
+            const isOn: boolean = (element.getAttribute(entry.status) === 'true');
+            element.setAttribute(entry.status, String(!isOn));
+        },
     }
 });
 </script>

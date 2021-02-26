@@ -5,11 +5,17 @@
         </label>
         <input
             id="frame-input-bar" type="text" placeholder="Explore"
-            data-toggled="false"
-            @focus="handleInputFocus"
-            @keyup="handleInputKeyup"
+            :data-toggled="false"
+            @focus="handleInputBarFocus"
+            @keyup="handleInputBarKeyup"
         />
-        <button @click="handleButtonClick">
+        <button
+            :aria-pressed="ariaPressed"
+            @click="handleShowAllBtnClick"
+        >
+            {{ matchCount }}
+        </button>
+        <button @click="handleClearBtnClick">
             <svg viewBox="0 0 10 10">
                 <path d="M1,1 L9,9 M1,9 L9,1"/>
             </svg>
@@ -43,27 +49,77 @@ export const input: Filter = {
 
 export default Vue.extend({
     name: 'FrameInput',
+    props: {
+        queries: Array,
+        matches: Object
+    },
+    data(): object {
+        return {
+            isIndexInvoked: false as boolean
+        };
+    },
+    computed: {
+        matchCount: function(): number {
+            return Object.keys(this.matches).length;
+        },
+        ariaPressed: function(): boolean {
+            return this.$data.isIndexInvoked || !!this.queries[0];
+        }
+    },
+    watch: {
+        $route(): void {
+            this.$data.isIndexInvoked = false;
+        }
+    },
     methods: {
         /*
             Event handlers
         */
-        handleInputFocus(event: Event): void {
-            this.$emit('open', event.target, input, 'input');
+        handleInputBarFocus(): void {
+            this.$data.isIndexInvoked && this.revokeIndex();
+            this.toggleFilterOn();
+            this.$emit('open', input, 'input');
         },
-        handleInputKeyup(event: Event): void {
+        handleInputBarKeyup(event: Event): void {
             const target = event.target as HTMLInputElement;
+            /*
+                if value not emptied by keyup, pass as query,
+                else reset queries & all filter values & visibilities to default
+            */
             target.value
                 ? this.$emit('query', 'input')
                 : this.$emit('clear', ['input']);
         },
-        handleButtonClick(): void {
-            /* ensure handleChannelOpen is run for input, to revert all other filters*/
+        handleShowAllBtnClick(): void {
+            if (!this.ariaPressed && !this.$data.isIndexInvoked) {
+                this.invokeIndex();
+            } else if (this.$data.isIndexInvoked) {
+                this.revokeIndex();
+            };
+        },
+        handleClearBtnClick(): void {
+            this.$data.isIndexInvoked && this.revokeIndex();
             if (this.$parent.$data.channel != 'input') {
-                const inputElement = document.querySelector('#frame-input-bar');
-                this.$emit('open', inputElement, input, 'input');
+                /* ensure handleChannelOpen is run, to revert all other filters*/
+                this.$emit('open', input, 'input');
             };
             this.$emit('clear', ['input']);
             this.$emit('close', 'input');
+        },
+        /*
+            Utility methods
+        */
+        invokeIndex(): void {
+            this.$data.isIndexInvoked = true;
+            this.$emit('invoke', 'index');
+        },
+        revokeIndex(): void {
+            this.$data.isIndexInvoked = false;
+            this.$emit('invoke', 'index');
+        },
+        toggleFilterOn(): void {
+            const element = document.querySelector('#frame-input-bar') as HTMLElement;
+            element.setAttribute(input.status, "true");
         }
     }
 });
