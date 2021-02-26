@@ -34,7 +34,7 @@
 
 import Vue from 'vue';
 /* interfaces */
-import { Entry, Filter } from '../types';
+import { Entry, Filter, View } from '../types';
 /* components & objects implementing the Filter interface */
 import FrameInput, { input } from './FrameInput.vue';
 import { entry } from '../views/FrameEntry.vue';
@@ -50,7 +50,12 @@ const baseEntries = {
 };
 
 /* regular expression to match <t></t> elements, containing terms */
-const termFormat = /(<\/?t\/?>)([\s\w.]*)(<\/?t\/?>)/g;
+const termMatch = /(<\/?t\/?>)([\s\w.]*)(<\/?t\/?>)/g;
+
+/* function to convert base entry name to URI substring */
+const URIFormat = (name: string) => {
+    return name.replaceAll(/\W/g, '-').replaceAll(/-+/g, '-');
+};
 
 /*
     Vue object
@@ -76,32 +81,39 @@ export default Vue.extend({
     },
     computed: {
         entry: function(): Entry {
-            /* return prop passed to FrameEntry */
-            return this.getEntry(this.$data.entries, this.$route.params.name || 'start');
+            /* return a named entry, 'start' or 'error'; prop passed to FrameEntry */
+            return this.getEntry(this.$data.entries, this.$route.params.name);
         },
-        names: function(): Record<number, string> {
-            /* return names of all entries exc. 'start' & 'error', sorted & id keyed */
-            const namesArr = Object.keys(this.$data.entries).slice(2).sort();
-            const namesObj: Record<number, string> = {};
-            namesArr.forEach((name, index) => {
-                namesObj[index] = name;
+        views: function(): Record<string, View> {
+            /*
+                return id, URI-formatted name & body format status for all entries
+                exc. 'start' & 'error', indexed by entry name alphabetically sorted
+            */
+            const viewsArr = Object.keys(this.$data.entries).slice(2).sort();
+            const viewsObj: Record<string, View> = {};
+            viewsArr.forEach((name, index) => {
+                viewsObj[name] = {
+                    index,
+                    route: URIFormat(name),
+                    isSet: false
+                };
             });
-            return namesObj;
+            return viewsObj;
         },
-        areFormatted: function(): Record<string, boolean> {
-            /* return each entry name indexing a false value, for entries formatted */
-            const areFormatted: Record<string, boolean> = {};
-            Object.values(this.names).forEach(name => {
-                areFormatted[name] = false;
+        routes: function(): Record<string, string> {
+            /* return each unformatted entry name indexed by URI-formatted version */
+            const routes: Record<string, string> = {};
+            Object.keys(this.views).forEach(name => {
+                routes[URIFormat(name)] = name;
             });
-            return areFormatted;
+            return routes;
         },
-        matches: function(): Record<number, string> {
-            /* return prop passed to FrameIndex */
-            return this.getMatches(this.names, this.$data.queries);
+        matches: function(): Record<string, View> {
+            /* return subset of views object; prop passed to FrameInput & -Index */
+            return this.getMatches(this.views, this.$data.queries);
         },
         indexIsSeen: function(): boolean {
-            /* return true if filtering is in progress */
+            /* return true if index has been invoked or filtering is in progress */
             return this.$data.invoked.includes('index') || !!this.$data.queries[0];
         }
     },
@@ -164,10 +176,10 @@ export default Vue.extend({
             if (name) {
                 this.resetToggledElements([name]);
                 this.$data.channel = '';
-                this.$data.invoked = [];
             };
+            this.$data.invoked = [];
         },
-        /* add named feature to invoked array if not present, else remove it */
+        /* add a named feature to invoked array if not present, else remove it */
         handleFeatureInvoke(name: string): void {
             this.$data.invoked.indexOf(name) != -1
                 ? this.$data.invoked.splice(this.$data.invoked.indexOf(name), 1)
@@ -211,33 +223,38 @@ export default Vue.extend({
             Prop providers
         */
         /* return an entry formatted & stored, or format & store first, else 'error' */
-        getEntry(entries: Record<string, Entry>, name: string): Entry {
+        getEntry(entries: Record<string, Entry>, route: string): Entry {
+            const name = this.routes[route] || 'start';
             if (!entries[name]) {
                 return this.$data.entries['error'];
             };
-            if (entries[name] && this.areFormatted[name] === true) {
+            if (name === 'start') {
+                return this.$data.entries['start'];
+            };
+            if (entries[name] && this.views[name].isSet === true) {
                 return entries[name];
             };
-            entries[name].body = entries[name].body
-                .replaceAll(termFormat, this.formatTerms);
-            this.areFormatted[name] = true;
+            entries[name].body = entries[name].body.replaceAll(termMatch, this.setTerms);
+            this.views[name].isSet = true;
             return entries[name];
         },
         /* if term is in 1+ entry names, return in a filter element, else tag-free */
-        formatTerms(element: string, opening: string, term: string): string {
-            const matches = this.getMatches(this.names, [ term ]);
+        setTerms(element: string, opening: string, term: string): string {
+            const matches = this.getMatches(this.views, [ term ]);
             const { anchor, status } = this.$data.filters.entry;
-            return Object.keys(matches).length > 0 ?
-                `<${anchor} ${status}="false">${term}</${anchor}>` : term;
+            const tag: string = anchor.toLowerCase();
+            return Object.keys(matches).length > 0
+                ? `<${tag} ${status}="false">${term}</${tag}>`
+                : term;
         },
         /* return an object holding each entry name which includes every query string */
-        getMatches(names: Record<number, string>, queries = ['']): Record<number, string> {
-            let namesNested = Object.entries(names);
+        getMatches(views: Record<string, View>, queries = ['']): Record<number, View> {
+            let viewsNested = Object.entries(views);
             queries.forEach(query => {
-                namesNested = namesNested.filter(name =>
-                    name[1].toLowerCase().includes(query.toLowerCase()));
+                viewsNested = viewsNested.filter(name =>
+                    name[0].toLowerCase().includes(query.toLowerCase()));
             });
-            return Object.fromEntries(namesNested);
+            return Object.fromEntries(viewsNested);
         },
         /* assign to queries each string on a toggled filter element source attribute */
         extractQueries(name: string, filter: Filter): void {
