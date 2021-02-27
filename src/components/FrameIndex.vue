@@ -3,7 +3,7 @@
         <p v-if="!hasMatches">
             No entries found.
         </p>
-        <ul v-if="hasMatches">
+        <ul v-else>
             <li v-for="(match, name) in matches" v-bind:key="match.index">
                 <router-link v-bind:to="match.route">
                     {{ name }}

@@ -11,19 +11,23 @@
             @invoke="handleFeatureInvoke"
         />
         <!-- entry & filter (buttons) -->
-        <router-view
-            v-if="filters.entry.isSeen"
-            :entry="entry"
-            @open="handleChannelOpen"
-            @query="handleIncomingQuery"
-            class="border--thin"
-        />
+        <transition appear>
+            <router-view
+                v-if="filters.entry.isSeen"
+                :entry="entry"
+                @open="handleChannelOpen"
+                @query="handleIncomingQuery"
+                class="border--thin"
+            />
+        </transition>
         <!-- list of matches -->
-        <frame-index
-            v-if="indexIsSeen"
-            :matches="matches"
-            class="border--thin"
+        <transition appear>
+            <frame-index
+                v-if="indexIsSeen"
+                :matches="matches"
+                class="border--thin"
          />
+        </transition>
     </main>
 </template>
 

@@ -8,7 +8,7 @@
         >
         </div>
         <p
-            v-if="isError"
+            v-else
             class="text--center">
             <strong>Oops...</strong>
             <br><br>
