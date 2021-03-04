@@ -58,7 +58,7 @@ const termMatch = /(<\/?t\/?>)([\s\w.]*)(<\/?t\/?>)/g;
 
 /* function to convert base entry name to URI substring */
 const URIFormat = (name: string) => {
-    return name.replaceAll(/\W/g, '-').replaceAll(/-+/g, '-');
+    return name.replace(/\W/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
 };
 
 /*
@@ -238,7 +238,7 @@ export default Vue.extend({
             if (entries[name] && this.views[name].isSet === true) {
                 return entries[name];
             };
-            entries[name].body = entries[name].body.replaceAll(termMatch, this.setTerms);
+            entries[name].body = entries[name].body.replace(termMatch, this.setTerms);
             this.views[name].isSet = true;
             return entries[name];
         },
