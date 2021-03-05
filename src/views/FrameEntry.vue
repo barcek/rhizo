@@ -2,6 +2,7 @@
     <article
         @click="handleClick"
         class="frame-entry"
+        :id="filterId"
     >
         <h1>
             {{ entry.name }}
@@ -41,6 +42,7 @@ export const entry: Filter = {
 export default Vue.extend({
     name: 'FrameEntry',
     props: {
+        filterId: String,
         entry: Object
     },
     methods: {
@@ -48,8 +50,8 @@ export default Vue.extend({
             const target = event.target as HTMLButtonElement;
             if (target.nodeName === entry.anchor) {
                 this.toggleButton(target);
-                this.$emit('open', entry, 'entry');
-                this.$emit('query', 'entry');
+                this.$emit('open', entry, this.filterId);
+                this.$emit('query', this.filterId);
             };
         },
         toggleButton(element: HTMLElement): void {

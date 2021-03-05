@@ -2,6 +2,7 @@
     <main class="frame">
         <!-- filter (text input) -->
         <frame-input
+            filterId="searchbar"
             :queries="queries"
             :matches="matches"
             @open="handleChannelOpen"
@@ -14,6 +15,7 @@
         <transition appear>
             <router-view
                 v-if="filters.entry.isSeen"
+                filterId="entry"
                 :entry="entry"
                 @open="handleChannelOpen"
                 @query="handleIncomingQuery"
@@ -52,6 +54,9 @@ import { debounce } from '../utils/index.js';
     Constants
 */
 
+/* assign input filter object to identifier matching FrameInput filterId */
+const searchbar = JSON.parse(JSON.stringify(input));
+
 const baseEntries = {
     start: { name: 'Get started', body: 'Start browsing...'} as Entry,
     error: { name: 'Oops', body: 'Something seems off...' } as Entry
@@ -81,10 +86,10 @@ export default Vue.extend({
     data(): object {
         return {
             entries: {} as object,
-            filters: { input, entry } as object,
+            filters: { searchbar, entry } as object,
             channel: '' as string, // the filter ready to emit queries
             queries: [] as string[],
-            invoked: [] as string[]
+            invoked: [] as string[],
         };
     },
     computed: {
@@ -207,7 +212,7 @@ export default Vue.extend({
         */
         /* return the element(s) of a filter with status attribute true, i.e. on */
         getToggledElements(name: string, filter: Filter): Array<Element> {
-            const selector = `.frame-${name} [${filter.status}="true"]`;
+            const selector = `#${name} [${filter.status}="true"]`;
             const selected: NodeListOf<Element> = document.querySelectorAll(selector);
             return Array.prototype.slice.call(selected);
         },

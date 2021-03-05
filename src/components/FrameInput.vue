@@ -1,5 +1,5 @@
 <template>
-    <section class="frame-input cont--flex">
+    <section :id="filterId">
         <label for="frame-input-bar" class="visually-hidden">
             explore
         </label>
@@ -51,6 +51,7 @@ export const input: Filter = {
 export default Vue.extend({
     name: 'FrameInput',
     props: {
+        filterId: String,
         queries: Array,
         matches: Object
     },
@@ -79,7 +80,7 @@ export default Vue.extend({
         handleInputBarFocus(): void {
             this.$data.isIndexInvoked && this.revokeIndex();
             this.toggleFilterOn();
-            this.$emit('open', input, 'input');
+            this.$emit('open', input, this.filterId);
         },
         handleInputBarKeyup(event: KeyboardEvent): void {
             const target = event.target as HTMLInputElement;
@@ -88,8 +89,8 @@ export default Vue.extend({
                 else reset queries & all filter values & visibilities to default
             */
             target.value
-                ? this.$emit('query', 'input')
-                : this.$emit('clear', ['input']);
+                ? this.$emit('query', this.filterId)
+                : this.$emit('clear', [this.filterId]);
         },
         handleShowAllBtnClick(): void {
             if (!this.ariaPressed && !this.$data.isIndexInvoked) {
@@ -100,12 +101,12 @@ export default Vue.extend({
         },
         handleClearBtnClick(): void {
             this.$data.isIndexInvoked && this.revokeIndex();
-            if (this.$parent.$data.channel != 'input') {
+            if (this.$parent.$data.channel != this.filterId) {
                 /* ensure handleChannelOpen is run, to revert all other filters*/
-                this.$emit('open', input, 'input');
+                this.$emit('open', input, this.filterId);
             };
-            this.$emit('clear', ['input']);
-            this.$emit('close', 'input');
+            this.$emit('clear', [this.filterId]);
+            this.$emit('close', this.filterId);
         },
         /*
             Utility methods
@@ -119,8 +120,9 @@ export default Vue.extend({
             this.$emit('invoke', 'index');
         },
         toggleFilterOn(): void {
-            const element = document.querySelector('#frame-input-bar') as HTMLElement;
-            element.setAttribute(input.status, "true");
+            const selector = `#${this.filterId} > input`;
+            const selected = document.querySelector(selector) as HTMLElement;
+            selected.setAttribute(input.status, "true");
         }
     }
 });
