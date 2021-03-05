@@ -24,8 +24,10 @@
         <transition appear>
             <frame-index
                 v-if="indexIsSeen"
+                :queries="queries"
                 :matches="matches"
-                class="border--thin"
+                :channelNature="channelNature"
+                @untoggle="handleUntoggle"
          />
         </transition>
     </main>
@@ -43,6 +45,8 @@ import { Entry, Filter, View } from '../types';
 import FrameInput, { input } from './FrameInput.vue';
 import { entry } from '../views/FrameEntry.vue';
 import FrameIndex from './FrameIndex.vue';
+// @ts-ignore
+import { debounce } from '../utils/index.js';
 
 /*
     Constants
@@ -119,6 +123,10 @@ export default Vue.extend({
         indexIsSeen: function(): boolean {
             /* return true if index has been invoked or filtering is in progress */
             return this.$data.invoked.includes('index') || !!this.$data.queries[0];
+        },
+        channelNature: function(): string {
+            /* return the current channel nature, whether single- or multi-element*/
+            return this.$data.filters[this.$data.channel]?.nature || '';
         }
     },
     watch: {
@@ -183,6 +191,11 @@ export default Vue.extend({
             };
             this.$data.invoked = [];
         },
+        /* untoggle the element on the channel holding a query & clear the query */
+        handleUntoggle(query: string): void {
+            this.resetToggledElement(this.$data.channel, query);
+            this.clearQuery(query);
+        },
         /* add a named feature to invoked array if not present, else remove it */
         handleFeatureInvoke(name: string): void {
             this.$data.invoked.indexOf(name) != -1
@@ -197,6 +210,15 @@ export default Vue.extend({
             const selector = `.frame-${name} [${filter.status}="true"]`;
             const selected: NodeListOf<Element> = document.querySelectorAll(selector);
             return Array.prototype.slice.call(selected);
+        },
+        /* set the status attribute for an element sending a query to false, i.e. off */
+        resetToggledElement(name: string, value: string): void {
+            const filter = this.$data.filters[name];
+            const els: Array<typeof filter.typing>
+                = this.getToggledElements(name, filter);
+            els.forEach(el => {
+                el[filter.source] === value && el.setAttribute(filter.status, "false");
+            });
         },
         /* ensure every status attribute on each named filter is false, i.e. off */
         resetToggledElements(names: string[]): void {
@@ -222,6 +244,12 @@ export default Vue.extend({
             filters.forEach(filter => {
                 this.$data.filters[filter].isSeen = names.includes(filter) ? true : false;
             });
+        },
+        /*
+            Query managers
+        */
+        clearQuery(query: string) {
+            this.$data.queries.splice(this.$data.queries.indexOf(query), 1);
         },
         /*
             Prop providers

@@ -1,5 +1,12 @@
 <template>
     <nav class="frame-index">
+        <transition appear>
+            <frame-batch
+                v-if="batchIsSeen"
+                :queries="queries"
+                @untoggle="handleUntoggle"
+            />
+        </transition>
         <p v-if="!hasMatches">
             No entries found.
         </p>
@@ -19,6 +26,7 @@
 */
 
 import Vue from 'vue';
+import FrameBatch from './FrameBatch.vue';
 
 /*
     Vue object
@@ -26,12 +34,28 @@ import Vue from 'vue';
 
 export default Vue.extend({
     name: 'FrameIndex',
+    components: {
+        FrameBatch
+    },
     props: {
-        matches: Object
+        queries: Array,
+        matches: Object,
+        channelNature: String
     },
     computed: {
         hasMatches(): boolean {
             return Object.keys(this.matches).length > 0;
+        },
+        batchIsSeen: function(): boolean {
+            return this.queries[0] != '' && this.channelNature === 'multi';
+        }
+    },
+    methods: {
+        /*
+            Event handlers
+        */
+        handleUntoggle(query: string) {
+            this.$emit('untoggle', query);
         }
     }
 });

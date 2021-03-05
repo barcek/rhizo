@@ -36,6 +36,7 @@ import { Filter } from '../types';
 */
 
 export const input: Filter = {
+    nature: 'single',
     anchor: 'INPUT',
     typing: HTMLInputElement,
     status: 'data-toggled',
@@ -80,7 +81,7 @@ export default Vue.extend({
             this.toggleFilterOn();
             this.$emit('open', input, 'input');
         },
-        handleInputBarKeyup(event: Event): void {
+        handleInputBarKeyup(event: KeyboardEvent): void {
             const target = event.target as HTMLInputElement;
             /*
                 if value not emptied by keyup, pass as query,

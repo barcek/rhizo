@@ -5,6 +5,7 @@ export interface Entry {
 };
 
 export interface Filter {
+    readonly nature: string;
     readonly anchor: string;
     readonly typing: unknown;
     readonly status: string;

@@ -26,6 +26,7 @@ import { Filter } from '../types';
 */
 
 export const entry: Filter = {
+    nature: 'multi',
     anchor: 'BUTTON',
     typing: HTMLButtonElement,
     status: 'aria-pressed',
