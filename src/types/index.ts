@@ -2,6 +2,7 @@ export interface Entry {
     readonly name: string;
     meta?: string;
     body: string;
+    view?: View;
 };
 
 export interface Filter {
@@ -14,8 +15,8 @@ export interface Filter {
 };
 
 export interface View {
-    readonly index: number;
-    readonly route: string;
+    index: number;
+    route: string;
     isSet: boolean;
 }
 

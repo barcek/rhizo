@@ -7,12 +7,13 @@
                 @untoggle="handleUntoggle"
             />
         </transition>
+
         <p v-if="!hasMatches">
             No entries found.
         </p>
         <ul v-else>
-            <li v-for="(match, name) in matches" v-bind:key="match.index">
-                <router-link v-bind:to="match.route">
+            <li v-for="(match, name) in matches" v-bind:key="match.view.index">
+                <router-link v-bind:to="match.view.route">
                     {{ name }}
                 </router-link>
             </li>
