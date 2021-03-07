@@ -17,7 +17,7 @@ If you have an existing Vue 2 project set up for TypeScript compilation, and can
 A new Vue 2 project can be generated from scratch using [Vue CLI](https://cli.vuejs.org/). In this case:
 
 1. the 'App.vue', 'main.ts' and 'router/index.ts' files in the 'src' folder generated through Vue CLI can be replaced with those from this repository;
-2. the 'types' folder in this repository can be copied into the generated 'src' folder;
+2. the 'store' and 'types' folders in this repository can be copied into the generated 'src' folder;
 3. the components in the 'components' and 'views' directories in this repository can be copied into the corresponding directories in the generated 'src' folder;
 4. any unwanted default files in the generated 'components' and 'views' folders can be removed.
 
@@ -61,6 +61,26 @@ The 'index.ts' file defines two paths: the entrypoint '/' and a path with the dy
 
 Scroll behaviour is also set, to return to the top of the page when navigating to a new route, with smooth scrolling requested.
 
+## store/
+
+The 'store' directory contains four files: 'index.ts', 'entry-base.ts', 'term-match.ts' and 'uri-format.ts'.
+
+### index.ts
+
+The 'index.ts' file destructures the `Entry` and `View` interfaces from the 'types' folder and the implementation of the `Filter` interface in the `FrameEntry` component, imports the customizables `entryBase`, `termMatch` and `URIFormat` from their modules and exports the `Store` class.
+
+### entry-base.ts
+
+The 'entry-base.ts' file destructures the `Entry` interface from the 'types' folder and exports an object containing the base 'error' and 'start' entries.
+
+### term-match.ts
+
+The 'term-match.ts' file exports the regular expression used to match each term in an entry.
+
+### uri-format.ts
+
+The 'uri-format.ts' file exports the function used to convert each entry name to a URI substring.
+
 ## types/
 
 The 'types' directory contains a single 'index.ts' file with an interface each for the `entry`, `filter` and `view` objects.
@@ -69,9 +89,9 @@ The 'types' directory contains a single 'index.ts' file with an interface each f
 
 The 'index.ts' file defines three interfaces: `Entry`, `Filter` and `View`.
 
-- `Entry` suggests minimal values for a blog-like entry, specifically the string values `name` for the identifier, e.g. title, and `body` for the remainder of the entry. Others can be added as required. A `meta` key is also present for a string value used by the `Frame` component to determine whether an alternative start entry is present: if the value is 'start', that entry becomes the initial entry. The component `FrameEntry` makes use of `name` and `body` only, leaving the use and positioning of any remaining values to be determined.
+- `Entry` suggests minimal values for a blog-like entry, specifically the string values `name` for the identifier, e.g. title, and `body` for the remainder of the entry. Others can be added as required. The component `FrameEntry` makes use of `name` and `body` only, leaving the use and positioning of any remaining values to be determined. A `meta` key is also present for a string value used by the `Frame` component to determine whether an alternative start entry is present: if the value is 'start', that entry becomes the initial entry. The `view` key takes an implementation of the `View` interface (see below). If not provided in full or part, the absence is handled by the `Frame` component in its use of the `Store` class.
 - `Filter` provides for the values required by the filter components `FrameInput` and `FrameEntry` and used elsewhere, specifically the string value `nature` to indicate whether the filter is single- or multi-element, the string value `anchor` for the nodeName of the element from which the query will be extracted, e.g. `'INPUT'`, `typing` for the type of that element, e.g. `HTMLInputElement`, the string value `status` for the attribute used to indicate toggled status, e.g. `'data-toggled'`, the string value `source` for the property on which the query string can be found, e.g. `'value'` and the boolean value `isSeen` for whether the filter component is shown.
-- `View` provides for values used by the `Frame` component in processing and handling each entry, specifically the number value `index` as a unique identifier, the string value `route` for the name as URI segment and the boolean value `isSet` to indicate whether the body of the entry has been formatted, in order that the formatted version can be reused.
+- `View` provides for values used by the `Frame` component and `Store` class in processing and handling each entry, specifically the number value `index` as a unique identifier, the string value `route` for the name as URI segment and the boolean value `isSet` to indicate whether the body of the entry has been formatted, in order that the formatted version can be reused.
 
 ## Development plan
 
