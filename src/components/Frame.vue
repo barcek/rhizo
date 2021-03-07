@@ -19,7 +19,6 @@
                 :entry="entry"
                 @open="handleChannelOpen"
                 @query="handleIncomingQuery"
-                class="border--thin"
             />
         </transition>
         <!-- list of matches -->
@@ -30,7 +29,7 @@
                 :matches="matches"
                 :channelNature="channelNature"
                 @untoggle="handleUntoggle"
-         />
+            />
         </transition>
     </main>
 </template>
@@ -41,14 +40,18 @@
 */
 
 import Vue from 'vue';
+
 /* interfaces */
-import { Entry, Filter, View } from '../types';
+import { Entry, Filter } from '../types';
+
 /* components & objects implementing the Filter interface */
 import FrameInput, { input } from './FrameInput.vue';
 import { entry } from '../views/FrameEntry.vue';
 import FrameIndex from './FrameIndex.vue';
+
+/* other modules */
 // @ts-ignore
-import { debounce } from '../utils/index.js';
+import Store from '../store';
 
 /*
     Constants
@@ -56,19 +59,6 @@ import { debounce } from '../utils/index.js';
 
 /* assign input filter object to identifier matching FrameInput filterId */
 const searchbar = JSON.parse(JSON.stringify(input));
-
-const baseEntries = {
-    start: { name: 'Get started', body: 'Start browsing...'} as Entry,
-    error: { name: 'Oops', body: 'Something seems off...' } as Entry
-};
-
-/* regular expression to match <t></t> elements, containing terms */
-const termMatch = /(<\/?t\/?>)([\s\w.]*)(<\/?t\/?>)/g;
-
-/* function to convert base entry name to URI substring */
-const URIFormat = (name: string) => {
-    return name.replace(/\W/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
-};
 
 /*
     Vue object
@@ -85,7 +75,7 @@ export default Vue.extend({
     },
     data(): object {
         return {
-            entries: {} as object,
+            storage: new Store(this.$props.content),
             filters: { searchbar, entry } as object,
             channel: '' as string, // the filter ready to emit queries
             queries: [] as string[],
@@ -95,19 +85,15 @@ export default Vue.extend({
     computed: {
         entry: function(): Entry {
             /* return a named entry, 'start' or 'error'; prop passed to FrameEntry */
-            return this.getEntry(this.$data.entries, this.$route.params.name);
+            return this.$data.storage.getEntry(this.$route.params.name, this.routes);
         },
         routes: function(): Record<string, string> {
             /* return each unformatted entry name indexed by URI-formatted version */
-            const routes: Record<string, string> = {};
-            Object.keys(this.$data.entries).slice(2).forEach(name => {
-                routes[this.$data.entries[name].view.route] = name;
-            });
-            return routes;
+            return this.$data.storage.computeRoutes();
         },
         matches: function(): Record<string, Entry> {
             /* return subset of views object; prop passed to FrameInput & -Index */
-            return this.getMatches(this.$data.entries, this.$data.queries);
+            return this.$data.storage.getMatches(this.$data.queries);
         },
         indexIsSeen: function(): boolean {
             /* return true if index has been invoked or filtering is in progress */
@@ -133,21 +119,8 @@ export default Vue.extend({
     },
     created(): void {
         /* convert content array to object & incl. base entries w/ any new 'start' */
-        const contentArr: Array<Entry> = this.$props.content;
-        let contentObj: Record<string, Entry> = {};
-        let nameLower = '';
-        contentArr.forEach(entry => {
-            if (entry.meta && entry.meta === 'start') {
-                baseEntries.start = entry;
-                return;
-            };
-            nameLower = entry.name;
-            nameLower.toLowerCase();
-            contentObj[nameLower] = entry;
-        });
-        contentObj = this.finalizeEntries(contentObj);
-        this.$data.entries = { ...baseEntries, ...contentObj };
-    },
+        this.$data.storage.prepareEntries();
+    }
     methods: {
         /*
             Event handlers
@@ -238,69 +211,14 @@ export default Vue.extend({
         /*
             Query managers
         */
-        clearQuery(query: string) {
-            this.$data.queries.splice(this.$data.queries.indexOf(query), 1);
-        },
-        /*
-            Prop providers
-        */
-        /* return an entry formatted & stored, or format & store first, else 'error' */
-        getEntry(entries: Record<string, Entry>, route: string): Entry {
-            const name = this.routes[route] || 'start';
-            if (!entries[name]) {
-                return this.$data.entries['error'];
-            };
-            if (name === 'start') {
-                return this.$data.entries['start'];
-            };
-            if (entries[name] && this.$data.entries[name].view.isSet === true) {
-                return entries[name];
-            };
-            entries[name].body = entries[name].body.replace(termMatch, this.setTerms);
-            this.$data.entries[name].view.isSet = true;
-            return entries[name];
-        },
-        /* if term is in 1+ entry names, return in a filter element, else tag-free */
-        setTerms(element: string, opening: string, term: string): string {
-            const matches = this.getMatches(this.$data.entries, [ term ]);
-            const { anchor, status } = this.$data.filters.entry;
-            const tag: string = anchor.toLowerCase();
-            return Object.keys(matches).length > 0
-                ? `<${tag} ${status}="false">${term}</${tag}>`
-                : term;
-        },
-        /* return an object holding each entry name which includes every query string */
-        getMatches(entries: Record<string, Entry>, queries = ['']): Record<number, Entry> {
-            let entriesNested = Object.entries(entries).slice(2);
-            queries.forEach(query => {
-                entriesNested = entriesNested.filter(name =>
-                    name[0].toLowerCase().includes(query.toLowerCase()));
-            });
-            return Object.fromEntries(entriesNested);
-        },
         /* assign to queries each string on a toggled filter element source attribute */
         extractQueries(name: string, filter: Filter): void {
             const els: Array<any> = this.getToggledElements(name, filter);
             const queries: string[] = els.map(el => el[filter.source] || '');
             this.$data.queries = queries;
         },
-        /*
-            Entry managers
-        */
-        finalizeEntries(entries: Record<string, Entry>): Record<string, Entry> {
-            const names = Object.keys(entries).sort();
-            names.forEach((name, index) => {
-                if (!entries[name].view) {
-                    entries[name].view = {} as View;
-                };
-                const view = entries[name].view as View;
-                entries[name].view = {
-                    index,
-                    route: view.route || URIFormat(name),
-                    isSet: view.isSet || false
-                } as View;
-            });
-            return entries;
+        clearQuery(query: string) {
+            this.$data.queries.splice(this.$data.queries.indexOf(query), 1);
         }
     }
 });
