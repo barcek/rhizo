@@ -84,7 +84,7 @@ export default Vue.extend({
     },
     computed: {
         entry: function(): Entry {
-            /* return a named entry, 'start' or 'error'; prop passed to FrameEntry */
+            /* return entry requested or a base entry; prop passed to FrameEntry */
             return this.$data.storage.getEntry(this.$route.params.name, this.routes);
         },
         routes: function(): Record<string, string> {
@@ -92,8 +92,8 @@ export default Vue.extend({
             return this.$data.storage.computeRoutes();
         },
         matches: function(): Record<string, Entry> {
-            /* return subset of views object; prop passed to FrameInput & -Index */
-            return this.$data.storage.getMatches(this.$data.queries);
+            /* return set of matching entries; prop passed to FrameInput & -Index */
+            return this.$data.storage.getQueryEntryMatches(this.$data.queries);
         },
         indexIsSeen: function(): boolean {
             /* return true if index has been invoked or filtering is in progress */
@@ -118,8 +118,8 @@ export default Vue.extend({
         }
     },
     created(): void {
-        /* convert content array to object & incl. base entries w/ any new 'start' */
-        this.$data.storage.prepareEntries();
+        /* key entries by name, ensure a view & incl. base w/ any new 'start' */
+        this.$data.storage.finalizeEntries();
     }
     methods: {
         /*
@@ -217,6 +217,7 @@ export default Vue.extend({
             const queries: string[] = els.map(el => el[filter.source] || '');
             this.$data.queries = queries;
         },
+        /* remove a query from the queries array */
         clearQuery(query: string) {
             this.$data.queries.splice(this.$data.queries.indexOf(query), 1);
         }

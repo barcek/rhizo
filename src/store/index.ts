@@ -19,8 +19,13 @@ import termMatch from './term-match';
 
 export default class Store {
 
+    /* entries as array */
     entriesArr: Array<Entry>;
+
+    /* entries as object, incl. base entries, keyed by name & with full view */
     entriesObj = {} as Record<string, Entry>;
+
+    /* number of base entries, to avoid inclusion when an entry is requested */
     baseNumber = Object.keys(entryBase).length;
 
     constructor(entriesArr: Array<Entry>) {
@@ -28,15 +33,15 @@ export default class Store {
     };
 
     /*
-        Store initializers
+        Entry set readiers
     */
 
-    /* allow each entry to be accessed by name as key */
+    /* transfer entries array to object to allow each to be accessed by name */
     keyEntriesByName = (): Record<string, Entry> => {
         const keyed: Record<string, Entry> = {};
         let nameLower = '';
         this.entriesArr.forEach(entry => {
-            /* replace 'start' base entry if new provided */
+            /* replace 'start' base entry with new if new indicated */
             if (entry.meta && entry.meta === 'start') {
                 entryBase.start = entry;
                 return;
@@ -48,32 +53,34 @@ export default class Store {
         return keyed;
     };
 
-    /* retain existing view values exc. index, adding values or entire view as needed */
-    ensureView = (keyed: Record<string, Entry>): Record<string, Entry> => {
-        const names = Object.keys(keyed).sort();
-        names.forEach((name, index) => {
-            if (!keyed[name].view) {
-                keyed[name].view = {} as View;
-            };
-            const view = keyed[name].view as View;
-            keyed[name].view = {
-                index,
-                route: view.route || URIFormat(name),
-                isSet: view.isSet || false
-            } as View;
-        });
-        return keyed;
+    /* retain any view values ex. index, adding values or full view as needed */
+    ensureEntryView = (name: string, entry: Entry, index: number): Entry => {
+        if (!entry.view) {
+            entry.view = {} as View;
+        };
+        const view = entry.view as View;
+        entry.view = {
+            index,
+            route: view.route || URIFormat(name),
+            isSet: view.isSet || false
+        } as View;
+        return entry;
     };
 
-    /* combine all entries */
-    appendToBase = (keyedWithView: Record<string, Entry>): Record<string, Entry> => {
-        return { ...entryBase, ...keyedWithView};
+    /* combine entries object with base entries object */
+    appendEntriesToBase = (entries: Record<string, Entry>): Record<string, Entry> => {
+        return { ...entryBase, ...entries};
     };
 
-    prepareEntries = (): Record<string, Entry> => {
+    /* call to key entries by name, ensure a view & incl. base w/ any new 'start' */
+    finalizeEntries = (): Record<string, Entry> => {
         const keyed = this.keyEntriesByName();
-        const keyedWithView = this.ensureView(keyed);
-        this.entriesObj = this.appendToBase(keyedWithView);
+        const names = Object.keys(keyed).sort();
+        const keyedWithView = keyed;
+        names.forEach((name, index) => {
+            keyedWithView[name] = this.ensureEntryView(name, keyed[name], index);
+        });
+        this.entriesObj = this.appendEntriesToBase(keyedWithView);
         return this.entriesObj;
     };
 
@@ -82,7 +89,7 @@ export default class Store {
     */
 
     /* return an object holding each entry name which includes every query string */
-    getMatches = (queries = ['']): Record<number, Entry> => {
+    getQueryEntryMatches = (queries = ['']): Record<number, Entry> => {
         let entriesNested = Object.entries(this.entriesObj).slice(this.baseNumber);
         queries.forEach(query => {
             entriesNested = entriesNested.filter(name =>
@@ -92,8 +99,8 @@ export default class Store {
     };
 
     /* if term is in 1+ entry names, return in a filter element, else tag-free */
-    setTerms = (element: string, opening: string, term: string): string => {
-        const matches = this.getMatches([ term ]);
+    setEntryTerm = (element: string, opening: string, term: string): string => {
+        const matches = this.getQueryEntryMatches([ term ]);
         const { anchor, status } = entry;
         const tag: string = anchor.toLowerCase();
         return Object.keys(matches).length > 0
@@ -101,9 +108,10 @@ export default class Store {
             : term;
     };
 
-    replaceTerms = (name: string): Entry => {
+    /* replace each term in an entry body & note set on the entry view object */
+    replaceEntryTerms = (name: string): Entry => {
         const entry = this.entriesObj[name];
-        entry.body = entry.body.replace(termMatch, this.setTerms);
+        entry.body = entry.body.replace(termMatch, this.setEntryTerm);
         const view = entry.view as View;
         view.isSet = true;
         entry.view = view;
@@ -114,6 +122,7 @@ export default class Store {
         Value providers
     */
 
+    /* return each unformatted entry name indexed by the URI-formatted version */
     computeRoutes(): Record<string, string> {
         const routes: Record<string, string> = {};
         Object.keys(this.entriesObj).slice(this.baseNumber).forEach(name => {
@@ -127,7 +136,7 @@ export default class Store {
         return this.entriesObj;
     };
 
-    /* return an entry formatted & stored, or format & store first, else 'error' */
+    /* return an entry previously formatted, or format first, else a base entry */
     getEntry(route: string, routes: Record<string, string>): Entry {
         const name = routes[route] || 'start';
         if (!this.entriesObj[name]) {
@@ -141,7 +150,7 @@ export default class Store {
             return this.entriesObj[name];
         };
         let entry = this.entriesObj[name];
-        entry = this.replaceTerms(name);
+        entry = this.replaceEntryTerms(name);
         return entry;
     };
 };
