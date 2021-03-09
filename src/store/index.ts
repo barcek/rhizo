@@ -99,7 +99,7 @@ export default class Store {
     };
 
     /* if term is in 1+ entry names, return in a filter element, else tag-free */
-    setEntryTerm = (element: string, opening: string, term: string): string => {
+    setEntryTerm = (term: string): string => {
         const matches = this.getQueryEntryMatches([ term ]);
         const { anchor, status } = entry;
         const tag: string = anchor.toLowerCase();
