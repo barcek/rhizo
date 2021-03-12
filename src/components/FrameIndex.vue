@@ -1,22 +1,25 @@
 <template>
     <nav class="frame-index">
         <transition appear>
-            <frame-batch
+            <frame-index-batch
                 v-if="batchIsSeen"
                 :queries="queries"
                 @untoggle="handleUntoggle"
             />
         </transition>
-
-        <p v-if="!hasMatches">
+        <p
+            v-if="!hasMatches"
+        >
             No entries found.
         </p>
-        <ul v-else>
-            <li v-for="(match, name) in matches" v-bind:key="match.view.index">
-                <router-link v-bind:to="match.view.route">
-                    {{ name }}
-                </router-link>
-            </li>
+        <ul
+            v-else
+        >
+            <frame-index-entry
+                v-for="(match) in matches"
+                v-bind:key="match.view.index"
+                :match="match"
+            />
         </ul>
     </nav>
 </template>
@@ -27,7 +30,8 @@
 */
 
 import Vue from 'vue';
-import FrameBatch from './FrameBatch.vue';
+import FrameIndexBatch from './FrameIndexBatch.vue';
+import FrameIndexEntry from './FrameIndexEntry.vue';
 
 /*
     Vue object
@@ -36,7 +40,8 @@ import FrameBatch from './FrameBatch.vue';
 export default Vue.extend({
     name: 'FrameIndex',
     components: {
-        FrameBatch
+        FrameIndexBatch,
+        FrameIndexEntry
     },
     props: {
         queries: Array,
