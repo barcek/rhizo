@@ -1,6 +1,6 @@
 # rhizo
 
-A set of six components forming a single-page, blog-like hypertext viewer, including routes and types, written with Vue.js in TypeScript.
+A set of seven components forming a single-page, blog-like hypertext viewer, including routes and types, written with Vue.js in TypeScript.
 
 The whole has been spun out of the [notes](https://barcek.github.io/notes) project, a styled and extended implementation of the concept.
 
@@ -41,7 +41,7 @@ If at least one entry is present, the loader is removed and the array is passed 
 
 ## components/
 
-The 'components' directory contains four single-file components: 'Frame.vue', 'FrameBatch.vue', 'FrameInput.vue' and 'FrameIndex.vue'.
+The 'components' directory contains five single-file components: 'Frame.vue', 'FrameInput.vue', 'FrameIndex.vue', 'FrameIndexBatch.vue' and 'FrameIndexEntry.vue'.
 
 Notes on the components to follow.
 
