@@ -10,8 +10,12 @@
                     v-html="match.name"
                 >
                 </h1>
+                <div
+                    role='presentation'
+                >
+                </div>
                 <section
-                    v-html="match.body"
+                    v-html="renderUntabbable(match.body)"
                 >
                 </section>
             </article>
@@ -30,10 +34,26 @@ import Vue from 'vue';
     Vue object
 */
 
+const tabindexMatch = /(?<=tabindex=")-?\d+(?=")/g;
+const tabbableMatch = /(?<=<)(a|button|input|select|textarea|link)(?=\s+|>)/g;
+
 export default Vue.extend({
     name: 'FrameIndexEntry',
     props: {
         match: Object
+    },
+    methods: {
+        renumberTabindex() {
+            return '-1';
+        },
+        addFalseTabindex(tag: string) {
+            return tag + ' tabindex="-1"';
+        },
+        renderUntabbable(text: string) {
+            return text
+                .replace(tabindexMatch, this.renumberTabindex)
+                .replace(tabbableMatch, this.addFalseTabindex);
+        }
     }
 });
 </script>
