@@ -35,7 +35,7 @@ import Vue from 'vue';
 */
 
 const tabindexMatch = /(?<=tabindex=")-?\d+(?=")/g;
-const tabbableMatch = /(?<=<)(a|button|input|select|textarea|link)(?=\s+|>)/g;
+const tabbableMatch = /(?<=<)(a|button|input|select|textarea|area|object|audio|video|summary|link)(?=\s+|\/?>)/g;
 
 export default Vue.extend({
     name: 'FrameIndexEntry',
