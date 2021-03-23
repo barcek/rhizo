@@ -33,9 +33,9 @@ The 'App.vue' file is the overarching single-file component associated via the '
 
 ### App.vue
 
-The 'App.vue' file imports the `Frame` component and `Entry` interface.
+The 'App.vue' file uses the `Frame` component and `Entry` interface.
 
-A loader is shown while fetching a file from the 'public' folder by default named 'entries.json'. If found, the JSON is deserialized, with an array of entries implementing the `Entry` interface expected. Otherwise, an error message is shown.
+A loader is shown while the `created` lifecycle hook fetches a file from the 'public' folder named by default 'entries.json'. If found, the JSON is deserialized, with an array of entries implementing the `Entry` interface expected. Otherwise, an error message is shown.
 
 If at least one entry is present, the loader is removed and the array is passed as a prop to the `Frame` component.
 
@@ -43,7 +43,39 @@ If at least one entry is present, the loader is removed and the array is passed 
 
 The 'components' directory contains five single-file components: 'Frame.vue', 'FrameInput.vue', 'FrameIndex.vue', 'FrameIndexBatch.vue' and 'FrameIndexEntry.vue'.
 
-Notes on the components to follow.
+### Frame.vue
+
+The 'Frame.vue' file uses the `FrameInput` and `FrameIndex` components directly as well as the `Entry` and `Filter` interfaces. A third component - `FrameEntry` - is the sole view component used by the app, via the `router-view` element. From each of the `FrameInput` and `FrameEntry` components the file also imports an implementation of the `Filter` interface, providing the values used later in managing these filter components. These implementations are assigned to `data.filters`. Finally, the file imports the `Store` class.
+
+The `data.storage` property is assigned a new instance of the `Store` class and the `created` lifecycle hook calls the store instance `finalizeEntries` method to do the following:
+
+1. convert the array to an object, allowing entries to be accessed by name;
+2. ensure that each entry has a unique index, a URI component and a boolean value denoting whether or not the entry body has been formatted ready for display;
+3. include the base entries 'start' and 'error'.
+
+The `FrameInput` and `FrameEntry` components are visible initially. The `entry` computed value for the entry to be displayed is found by the store instance using `route.params.name` and the `routes` computed value and passed as a prop via the `router-view` element. Whether or not the `FrameIndex` component is visible is determined by the `indexIsSeen` boolean value.
+
+Two key events may be emitted by a filter component:
+
+1. `open` to reset the other filters and assign the emitting filter name to the `data.channel` property;
+2. `query` to ensure that the channel is the sole visible filter component and extract the query or queries from its relevant elements per the implementation of the `Filter` interface, assigning these to the `data.queries` property.
+
+The two stages allow a filter to be single-element in nature, e.g. a searchbar, or multi-element, e.g. a set of toggles.
+
+The `matches` value is computed based on the queries assigned and the `data.queries` and `matches` values are passed to the `FrameInput` and `FrameIndex` components.
+
+Four additional events may be emitted:
+
+1. `clear` to reset all filters and clear all queries;
+2. `close` to handle channel closure;
+3. `invoke` to use a particular feature, currently only to show `FrameIndex` on request;
+4. `untoggle` to toggle off a specific filter component element and clear its query.
+
+With each route change the handlers for the `clear` and `close` events are called.
+
+The filter components are each also passed a unique `filterId` prop and the `FrameIndex` component is passed the `channelNature` computed value indicating whether the channel is single or multi-element.
+
+Notes on remaining components to follow.
 
 ## views/
 
