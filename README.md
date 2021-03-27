@@ -81,7 +81,18 @@ Notes on remaining components to follow.
 
 The 'views' directory contains one single-file component: 'FrameEntry.vue'.
 
-Notes on the component to follow.
+### FrameEntry.vue
+
+The 'FrameEntry.vue' file uses the `Filter` interface and exports an implementation of the same. This implementation provides the values used by the `Frame` component in managing the `FrameEntry` component in its role as a filter.
+
+The component receives as props:
+
+- a `filterId` string value, which is passed to the `id` attribute on the parent element;
+- an `entry` object with a `name` string value which is passed to the heading element and a `body` string value - which may contain HTML - which is passed via the `v-html` directive to the `section` element.
+
+A click listener on the parent element calls the `handleClick` method. If the target of the event is the `anchor` element defined in the implementation of the filter interface, that element has its `status` attribute toggled and the `open` and `query` events are emitted.
+
+The `FrameEntry` component is the sole view component used by the app.
 
 ## router/
 
