@@ -1,5 +1,5 @@
 <template>
-    <li>
+    <li tabindex="-1">
         <router-link
             v-bind:to="match.view.route"
         >
@@ -35,7 +35,8 @@ import Vue from 'vue';
 */
 
 const tabindexMatch = /(?<=tabindex=")-?\d+(?=")/g;
-const tabbableMatch = /(?<=<)(a|button|input|select|textarea|area|object|audio|video|summary|link)(?=\s+|\/?>)/g;
+const tabbableMatch = /(?<=<)(button|input|select|textarea|area|object|audio|video|code|summary|link)(?=\s+|\/?>)/g;
+const aElementMatch = /(?<=<)a(?=.+|\/?>)/g;
 
 export default Vue.extend({
     name: 'FrameIndexEntry',
@@ -49,10 +50,14 @@ export default Vue.extend({
         addFalseTabindex(tag: string) {
             return tag + ' tabindex="-1"';
         },
+        setElementToNull() {
+            return 'null';
+        },
         renderUntabbable(text: string) {
             return text
                 .replace(tabindexMatch, this.renumberTabindex)
-                .replace(tabbableMatch, this.addFalseTabindex);
+                .replace(tabbableMatch, this.addFalseTabindex)
+                .replace(aElementMatch, this.setElementToNull);
         }
     }
 });
