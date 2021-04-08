@@ -43,7 +43,7 @@ export default class Store {
         this.entriesArr.forEach(entry => {
             /* replace 'start' base entry with new if new indicated */
             if (entry.meta && entry.meta === 'start') {
-                entryBase.start = entry;
+                entryBase.start = this.ensureEntryView('start', entry, -1);
                 return;
             };
             nameLower = entry.name;
@@ -141,9 +141,6 @@ export default class Store {
         const name = routes[route] || 'start';
         if (!this.entriesObj[name]) {
             return this.entriesObj['error'];
-        };
-        if (name === 'start') {
-            return this.entriesObj['start'];
         };
         const view = this.entriesObj[name].view as View;
         if (view.isSet === true) {
