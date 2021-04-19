@@ -6,6 +6,21 @@ The whole has been spun out of the [notes](https://barcek.github.io/notes) proje
 
 The components contain structure and logic, but are here left style-free for flexibility in how and where they are used. They are ready to be built into a preferred 'index.html' file with any accompanying assets and with the entries themselves in JSON format in a separate file.
 
+- [Getting started](#getting-started)
+    - [With an existing Vue project](#with-an-existing-vue-project)
+    - [With no Vue project available](#with-no-vue-project-available)
+    - [Entries & styling](#entries--styling)
+- [App.vue & main.ts](#appvue--maints)
+- [components/](#components)
+    - [Frame.vue](#framevue)
+    - [FrameInput.vue](#frameinputvue)
+- [views/](#views)
+    - [FrameEntry.vue](#frameentryvue)
+- [router/](#router)
+- [store/](#store)
+- [types/](#types)
+- [Development plan](#development-plan)
+
 ## Getting started
 
 ### With an existing Vue project
