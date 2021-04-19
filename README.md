@@ -75,6 +75,22 @@ With each route change the handlers for the `clear` and `close` events are calle
 
 The filter components are each also passed a unique `filterId` prop and the `FrameIndex` component is passed the `channelNature` computed value indicating whether the channel is single or multi-element.
 
+### FrameInput.vue
+
+The 'FrameInput.vue' file uses the `Filter` interface and exports an implementation of the same. This implementation provides the values used by the `Frame` component in managing the `FrameInput` component in its role as a filter.
+
+The component receives as props:
+
+- a `filterId` string value, which is passed to the `id` attribute on the parent element;
+- a `queries` array of string values, which is used in computing the `ariaPressed` boolean value indicating whether or not the `FrameIndex` component is visible, passed to the 'show all' button element;
+- a `matches` object containing `entry` objects, which is used to compute the `matchCount` integer value indicating the number of matches, also passed to the 'show all' button element;
+
+A focus and a keyup listener on the input element call the `handleInputBarFocus` and `handleInputBarKeyup` methods, respectively. On focus, the input element has its `status` attribute toggled and the `open` event is emitted. On keyup, the `query` event is emitted if a value is present, else the `clear` event.
+
+A click listener on the 'show all' button element calls the `handleShowAllBtnClick` method. This controls the emission of the `invoke` event to show or hide the `FrameIndex` component.
+
+A click listener on the 'clear' button element calls the `handleClearBtnClick` method. This emits the `open` event if `FrameInput` is not the current channel, ensuring that the `handleChannelOpen` method is run to revert all other filters, then emits the `clear` and `close` events.
+
 Notes on remaining components to follow.
 
 ## views/
