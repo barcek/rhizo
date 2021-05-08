@@ -6,6 +6,8 @@ The whole has been spun out of the [notes](https://barcek.github.io/notes) proje
 
 The components contain structure and logic, but are here left style-free for flexibility in how and where they are used. They are ready to be built into a preferred 'index.html' file with any accompanying assets and with the entries themselves in JSON format in a separate file.
 
+For the whole at a glance, see [the current repository tree](#repository-tree).
+
 - [Getting started](#getting-started)
     - [With an existing Vue project](#with-an-existing-vue-project)
     - [With no Vue project available](#with-no-vue-project-available)
@@ -20,6 +22,7 @@ The components contain structure and logic, but are here left style-free for fle
 - [store/](#store)
 - [types/](#types)
 - [Development plan](#development-plan)
+- [Repository tree](#repository-tree)
 
 ## Getting started
 
@@ -176,3 +179,31 @@ The following are possible next steps in the development of the code base. Pull 
 - extend filtering to entry body text
 - introduce memoization of matches
 - allow term aliasing
+
+## Repository tree
+
+```shell
+./
+├── src
+│   ├── components
+│   │   ├── Frame.vue
+│   │   ├── FrameIndex.vue
+│   │   ├── FrameIndexBatch.vue
+│   │   ├── FrameIndexEntry.vue
+│   │   └── FrameInput.vue
+│   ├── router
+│   │   └── index.ts
+│   ├── store
+│   │   ├── entry-base.ts
+│   │   ├── index.ts
+│   │   ├── term-match.ts
+│   │   └── uri-format.ts
+│   ├── types
+│   │   └── index.ts
+│   ├── views
+│   │   └── FrameEntry.vue
+│   ├── App.vue
+│   └── main.ts
+├── LICENSE.txt
+└── README.md
+```
