@@ -93,6 +93,18 @@ With each route change the handlers for the `clear` and `close` events are calle
 
 The filter components are each also passed a unique `filterId` prop and the `FrameIndex` component is passed the `channelNature` computed value indicating whether the channel is single or multi-element.
 
+### FrameIndex.vue
+
+The 'App.vue' file uses the `FrameIndexBatch` and `FrameIndexEntry` components.
+
+The component receives as props:
+
+- a `queries` array of string values, which is used in computing the `batchIsSeen` boolean value indicating whether or not the `FrameIndexBatch` component is visible, and also passed to it;
+- a `matches` object containing `entry` objects, which is used to compute the `hasMatches` boolean value indicating whether the list of `FrameIndexEntry` instances is visible, each instance corresponding to one match, or the 'No entries found' message is displayed;
+- a `channelNature` string value indicating whether the channel is single or multi-element, also used in computing the `batchIsSeen` boolean value;
+
+A listener for the `untoggle` event on the `FrameIndexBatch` component calls the `handleUntoggle` method, which emits an `untoggle` event in turn.
+
 ### FrameInput.vue
 
 The 'FrameInput.vue' file uses the `Filter` interface and exports an implementation of the same. This implementation provides the values used by the `Frame` component in managing the `FrameInput` component in its role as a filter.
