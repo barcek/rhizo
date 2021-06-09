@@ -15,6 +15,7 @@ For the whole at a glance, see [the current repository tree](#repository-tree).
 - [App.vue & main.ts](#appvue--maints)
 - [components/](#components)
     - [Frame.vue](#framevue)
+    - [FrameIndex.vue](#frameindexvue)
     - [FrameInput.vue](#frameinputvue)
 - [views/](#views)
     - [FrameEntry.vue](#frameentryvue)
