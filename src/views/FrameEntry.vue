@@ -4,7 +4,9 @@
         class="frame-entry"
         :id="filterId"
     >
-        <h1>
+        <h1
+            v-if="entry.name"
+        >
             {{ entry.name }}
         </h1>
         <section
