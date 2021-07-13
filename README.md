@@ -12,16 +12,17 @@ For the whole at a glance, see [the current repository tree](#repository-tree).
     - [With an existing Vue project](#with-an-existing-vue-project)
     - [With no Vue project available](#with-no-vue-project-available)
     - [Entries & styling](#entries--styling)
-- [App.vue & main.ts](#appvue--maints)
-- [components/](#components)
-    - [Frame.vue](#framevue)
-    - [FrameIndex.vue](#frameindexvue)
-    - [FrameInput.vue](#frameinputvue)
-- [views/](#views)
-    - [FrameEntry.vue](#frameentryvue)
-- [router/](#router)
-- [store/](#store)
-- [types/](#types)
+- [Content summary](#content-summary)
+    - [App.vue & main.ts](#appvue--maints)
+    - [components/](#components)
+        - [Frame.vue](#framevue)
+        - [FrameIndex.vue](#frameindexvue)
+        - [FrameInput.vue](#frameinputvue)
+    - [views/](#views)
+        - [FrameEntry.vue](#frameentryvue)
+    - [router/](#router)
+    - [store/](#store)
+    - [types/](#types)
 - [Development plan](#development-plan)
 - [Repository tree](#repository-tree)
 
@@ -46,11 +47,13 @@ The 'App.vue' component in rhizo assumes that the entries to be shown by the app
 
 The components are left style-free for flexibility, although each component has a class name. Styles can be added by the usual means, whether in or via the 'index.html' file in the 'public' folder, or in the individual component files, scoped to the component or otherwise.
 
-## App.vue & main.ts
+## Content summary
+
+### App.vue & main.ts
 
 The 'App.vue' file is the overarching single-file component associated via the 'main.ts' file with an 'index.html'.
 
-### App.vue
+#### App.vue
 
 The 'App.vue' file uses the `Frame` component and `Entry` interface.
 
@@ -58,11 +61,11 @@ A loader is shown while the `created` lifecycle hook fetches a file from the 'pu
 
 If at least one entry is present, the loader is removed and the array is passed as a prop to the `Frame` component.
 
-## components/
+### components/
 
 The 'components' directory contains five single-file components: 'Frame.vue', 'FrameInput.vue', 'FrameIndex.vue', 'FrameIndexBatch.vue' and 'FrameIndexEntry.vue'.
 
-### Frame.vue
+#### Frame.vue
 
 The 'Frame.vue' file uses the `FrameInput` and `FrameIndex` components directly as well as the `Entry` and `Filter` interfaces. A third component - `FrameEntry` - is the sole view component used by the app, via the `router-view` element. From each of the `FrameInput` and `FrameEntry` components the file also imports an implementation of the `Filter` interface, providing the values used later in managing these filter components. These implementations are assigned to `data.filters`. Finally, the file imports the `Store` class.
 
@@ -94,7 +97,7 @@ With each route change the handlers for the `clear` and `close` events are calle
 
 The filter components are each also passed a unique `filterId` prop and the `FrameIndex` component is passed the `channelNature` computed value indicating whether the channel is single or multi-element.
 
-### FrameIndex.vue
+#### FrameIndex.vue
 
 The 'App.vue' file uses the `FrameIndexBatch` and `FrameIndexEntry` components.
 
@@ -106,7 +109,7 @@ The component receives as props:
 
 A listener for the `untoggle` event on the `FrameIndexBatch` component calls the `handleUntoggle` method, which emits an `untoggle` event in turn.
 
-### FrameInput.vue
+#### FrameInput.vue
 
 The 'FrameInput.vue' file uses the `Filter` interface and exports an implementation of the same. This implementation provides the values used by the `Frame` component in managing the `FrameInput` component in its role as a filter.
 
@@ -124,11 +127,11 @@ A click listener on the 'clear' button element calls the `handleClearBtnClick` m
 
 Notes on remaining components to follow.
 
-## views/
+### views/
 
 The 'views' directory contains one single-file component: 'FrameEntry.vue'.
 
-### FrameEntry.vue
+#### FrameEntry.vue
 
 The 'FrameEntry.vue' file uses the `Filter` interface and exports an implementation of the same. This implementation provides the values used by the `Frame` component in managing the `FrameEntry` component in its role as a filter.
 
@@ -141,41 +144,41 @@ A click listener on the parent element calls the `handleClick` method. If the ta
 
 The `FrameEntry` component is the sole view component used by the app.
 
-## router/
+### router/
 
 The 'router' directory contains a single 'index.ts' file with the routes for the app.
 
-### index.ts
+#### index.ts
 
 The 'index.ts' file defines two paths: the entrypoint '/' and a path with the dynamic segment ':name' for the name of the entry to be shown. Both paths use the `FrameEntry` component.
 
 Scroll behaviour is also set, to return to the top of the page when navigating to a new route, with smooth scrolling requested.
 
-## store/
+### store/
 
 The 'store' directory contains four files: 'index.ts', 'entry-base.ts', 'term-match.ts' and 'uri-format.ts'.
 
-### index.ts
+#### index.ts
 
 The 'index.ts' file destructures the `Entry` and `View` interfaces from the 'types' folder and the implementation of the `Filter` interface in the `FrameEntry` component, imports the customizables `entryBase`, `termMatch` and `URIFormat` from their modules and exports the `Store` class.
 
-### entry-base.ts
+#### entry-base.ts
 
 The 'entry-base.ts' file destructures the `Entry` interface from the 'types' folder and exports an object containing the base 'error' and 'start' entries.
 
-### term-match.ts
+#### term-match.ts
 
 The 'term-match.ts' file exports the regular expression used to match each term in an entry.
 
-### uri-format.ts
+#### uri-format.ts
 
 The 'uri-format.ts' file exports the function used to convert each entry name to a URI substring.
 
-## types/
+### types/
 
 The 'types' directory contains a single 'index.ts' file with an interface each for the `entry`, `filter` and `view` objects.
 
-### index.ts
+#### index.ts
 
 The 'index.ts' file defines three interfaces: `Entry`, `Filter` and `View`.
 
