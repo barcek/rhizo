@@ -74,7 +74,11 @@ The 'components' directory contains five single-file components: 'Frame.vue', 'F
 
 #### Frame.vue
 
-The 'Frame.vue' file uses the `FrameInput` and `FrameIndex` components directly as well as the `Entry` and `Filter` interfaces. A third component - `FrameEntry` - is the sole view component used by the app, via the `router-view` element. From each of the `FrameInput` and `FrameEntry` components the file also imports an implementation of the `Filter` interface, providing the values used later in managing these filter components. These implementations are assigned to `data.filters`. Finally, the file imports the `Store` class.
+The 'Frame.vue' file uses the `FrameInput` and `FrameIndex` components directly as well as the `Entry` and `Filter` interfaces. A third component - `FrameEntry` - is the sole view component used by the app, via the `router-view` element.
+
+From each of the `FrameInput` and `FrameEntry` components the file also imports an implementation of the `Filter` interface, providing the values used later in managing these filter components. These implementations are assigned to `data.filters`. Finally, the file imports the `Store` class.
+
+##### Setup
 
 The `data.storage` property is assigned a new instance of the `Store` class and the `created` lifecycle hook calls the store instance `finalizeEntries` method to do the following:
 
@@ -83,6 +87,10 @@ The `data.storage` property is assigned a new instance of the `Store` class and 
 3. include the base entries 'start' and 'error'.
 
 The `FrameInput` and `FrameEntry` components are visible initially. The `entry` computed value for the entry to be displayed is found by the store instance using `route.params.name` and the `routes` computed value and passed as a prop via the `router-view` element. Whether or not the `FrameIndex` component is visible is determined by the `indexIsSeen` boolean value.
+
+The filter components are each also passed a unique `filterId` prop and the `FrameIndex` component is passed the `channelNature` computed value indicating whether the channel is single or multi-element.
+
+##### Events
 
 Two key events may be emitted by a filter component:
 
@@ -102,8 +110,6 @@ Four additional events may be emitted:
 
 With each route change the handlers for the `clear` and `close` events are called.
 
-The filter components are each also passed a unique `filterId` prop and the `FrameIndex` component is passed the `channelNature` computed value indicating whether the channel is single or multi-element.
-
 #### FrameIndex.vue
 
 The 'App.vue' file uses the `FrameIndexBatch` and `FrameIndexEntry` components.
@@ -113,6 +119,8 @@ The component receives as props:
 - a `queries` array of string values, which is used in computing the `batchIsSeen` boolean value indicating whether or not the `FrameIndexBatch` component is visible, and also passed to it;
 - a `matches` object containing `entry` objects, which is used to compute the `hasMatches` boolean value indicating whether the list of `FrameIndexEntry` instances is visible, each instance corresponding to one match, or the 'No entries found' message is displayed;
 - a `channelNature` string value indicating whether the channel is single or multi-element, also used in computing the `batchIsSeen` boolean value;
+
+##### Listener
 
 A listener for the `untoggle` event on the `FrameIndexBatch` component calls the `handleUntoggle` method, which emits an `untoggle` event in turn.
 
@@ -125,6 +133,8 @@ The component receives as props:
 - a `filterId` string value, which is passed to the `id` attribute on the parent element;
 - a `queries` array of string values, which is used in computing the `ariaPressed` boolean value indicating whether or not the `FrameIndex` component is visible, passed to the 'show all' button element;
 - a `matches` object containing `entry` objects, which is used to compute the `matchCount` integer value indicating the number of matches, also passed to the 'show all' button element;
+
+##### Listeners
 
 A focus and a keyup listener on the input element call the `handleInputBarFocus` and `handleInputBarKeyup` methods, respectively. On focus, the input element has its `status` attribute toggled and the `open` event is emitted. On keyup, the `query` event is emitted if a value is present, else the `clear` event.
 
@@ -142,14 +152,16 @@ The 'views' directory contains one single-file component: 'FrameEntry.vue'.
 
 The 'FrameEntry.vue' file uses the `Filter` interface and exports an implementation of the same. This implementation provides the values used by the `Frame` component in managing the `FrameEntry` component in its role as a filter.
 
+The `FrameEntry` component is the sole view component used by the app.
+
 The component receives as props:
 
 - a `filterId` string value, which is passed to the `id` attribute on the parent element;
 - an `entry` object with a `name` string value which is passed to the heading element and a `body` string value - which may contain HTML - which is passed via the `v-html` directive to the `section` element.
 
-A click listener on the parent element calls the `handleClick` method. If the target of the event is the `anchor` element defined in the implementation of the filter interface, that element has its `status` attribute toggled and the `open` and `query` events are emitted.
+##### Listener
 
-The `FrameEntry` component is the sole view component used by the app.
+A click listener on the parent element calls the `handleClick` method. If the target of the event is the `anchor` element defined in the implementation of the filter interface, that element has its `status` attribute toggled and the `open` and `query` events are emitted.
 
 ### router/
 
