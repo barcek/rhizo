@@ -207,7 +207,7 @@ The 'index.ts' file defines three interfaces: `Entry`, `Filter` and `View`.
 
 ## Development plan
 
-The following are possible next steps in the development of the code base. Pull requests are welcome for these and any other potential improvements.
+The following are possible next steps in the development of the code base. The general medium-term aim is a lightweight, modular component set scaleable to large libraries of highly-interlinked entries. Pull requests are welcome for these and any other potential improvements.
 
 - extract entry ordering & formatting to server-side tasks
 - modify filtering to prioritize exact entry name match
